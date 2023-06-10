@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Form Pendaftaran</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Form Pendaftaran</h1>
+    <form id="registrationForm">
+      <div class="form-group">
+        <label for="name">Nama:</label>
+        <input type="text" class="form-control" id="name" name="name">
+      </div>
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" class="form-control" id="email" name="email">
+      </div>
+      <div class="form-group">
+        <label for="phone">Nomor Telepon:</label>
+        <input type="tel" class="form-control" id="phone" name="phone">
+      </div>
+      <div class="form-group">
+        <label for="position">Pilihan Lowongan:</label>
+        <select class="form-control" id="position" name="position">
+          <option value="" selected disabled>Pilih Lowongan</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="domisili">Domisili:</label>
+        <select class="form-control" id="domisili" name="domisili">
+          <option value="" selected disabled>Pilih Domisili</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Daftar</button>
+    </form>
+    <div id="notification" class="alert alert-success" style="display: none;"></div>
+    <div id="result" class="mt-4"></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    // Data array untuk pilihan lowongan
+    var positions = [
+      { name: 'System Administrator', quota: 1 },
+      { name: 'Programmer', quota: 2 },
+      { name: 'Technical Writer', quota: 3 }
+    ];
+
+    // Data array untuk pilihan domisili
+    var domisili = ['Jakarta', 'Bandung', 'Surabaya', 'Yogyakarta'];
+
+    // Mengisi opsi lowongan pada select element
+    var positionSelect = $('#position');
+    positions.forEach(function(position) {
+      positionSelect.append($('<option>', { value: position.name, text: position.name }));
+    });
+
+    // Mengisi opsi domisili pada select element
+    var domisiliSelect = $('#domisili');
+    domisili.forEach(function(location) {
+      domisiliSelect.append($('<option>', { value: location, text: location }));
+    });
+
+    // Variabel untuk menyimpan data pendaftar
+    var registrants = [];
+
+    // Fungsi untuk menampilkan notifikasi
+    function showNotification(message) {
+      $('#notification').text(message).fadeIn().delay(3000).fadeOut();
+    }
+
+    // Fungsi untuk validasi form
+    function validateForm(event) {
+      event.preventDefault();
+
+      var name = $('#name').val();
+      var email = $('#email').val();
+      var phone = $('#phone').val();
+      var position = $('#position').val();
+      var domisili = $('#domisili').val();
+
+      // Validasi tidak boleh kosong
+      if (name === '' || email === '' || phone === '' || position === '' || domisili === '') {
+        showNotification('Mohon lengkapi semua inputan.');
+        return false;
+      }
+
+      // Validasi email sudah terdaftar
+      var existingEmails = registrants.map(function(registrant) {
+        return registrant.email;
+      });
+      if (existingEmails.includes(email)) {
+        showNotification('Email sudah terdaftar.');
+        return false;
+      }
+
+      // Validasi kuota
+      var selectedPosition = positions.find(function(positionObj) {
+        return positionObj.name === position;
+      });
+      if (!selectedPosition) {
+        showNotification('Pilihan lowongan tidak valid.');
+        return false;
+      }
+      if (selectedPosition.quota <= 0) {
+        showNotification('Mohon maaf, kuota untuk lowongan ini sudah penuh.');
+        return false;
+      }
+
+      // Tambahkan pendaftar dan kurangi kuota
+      registrants.push({ name: name, email: email, phone: phone, position: position, domisili: domisili });
+      selectedPosition.quota--;
+
+      // Tampilkan notifikasi sukses
+      showNotification('Pendaftaran berhasil.');
+
+      // Tampilkan jumlah pendaftar
+      showNotification('Jumlah pendaftar: ' + registrants.length);
+
+      // Tampilkan hasil inputan
+      var result = '';
+      result += '<h3>Hasil Pendaftaran:</h3>';
+      result += '<p>Nama: ' + name + '</p>';
+      result += '<p>Email: ' + email + '</p>';
+      result += '<p>Nomor Telepon: ' + phone + '</p>';
+      result += '<p>Pilihan Lowongan: ' + position + '</p>';
+      result += '<p>Domisili: ' + domisili + '</p>';
+      $('#result').html(result);
+
+      // Reset form
+      $('#registrationForm')[0].reset();
+
+      return false;
+    }
+
+    // Menangani submit form
+    $('#registrationForm').submit(validateForm);
+  </script>
+</body>
+</html>
